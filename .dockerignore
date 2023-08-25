@@ -1,0 +1,5 @@
+apps/auth
+apps/comment
+apps/post
+apps/user
+node_modules

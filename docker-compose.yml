@@ -1,0 +1,39 @@
+version: "3"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    expose:
+      - 5672
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  gateway:
+    build: .
+    env_file:
+      - .env
+    environment:
+      - PORT=$PORT
+      - DEFAULT_REQUEST_TIMEOUT=$DEFAULT_REQUEST_TIMEOUT
+      - DEFAULT_FAILURE_THRESHOLD=$DEFAULT_FAILURE_THRESHOLD
+      - DEFAULT_COOLDOWN_PERIOD=$DEFAULT_COOLDOWN_PERIOD
+    expose:
+      - $PORT
+    ports:
+      - "5000:5000"
+  auth:
+    build: "apps/auth"
+    depends_on:
+      - gateway
+      - rabbitmq
+    env_file:
+      - "apps/auth/.env"
+    environment:
+      - MODE=RUN_AS_SERVICE
+      - RMQ_URL=amqp://rabbitmq
+      - PORT=3001
+      - GATEWAY_URL=http://gateway:5000
+      - DEFAULT_KEY=auth
+      - DEFAULT_VERSION=v1
+      - HEARTBEAT_INTERVAL=5
+    
